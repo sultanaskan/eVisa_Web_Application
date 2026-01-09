@@ -3,20 +3,21 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
 export const generateToken = (id) => {
-    return (jwt.sign({ id}), process.env.JWT_SECRET, {expiresIn: '2d'});
+    return jwt.sign({ id}, process.env.JWT_SECRET, {expiresIn: '2d'});
 };
 
 
 export const registerUser = async (req, res) => {
-    const { fname,lname,dType, passCountry, dNumber, dEDate, email, password } = req.body;
-    
-    const userExists = await User.findOne({ email});
-    if(userExists) return res.status(400).json({ message: "User alreayd existes"});
+    try {
+        const { fname, lname, dType, passCountry, dNumber, dEDate, email, password } = req.body;
+        
+        const userExists = await User.findOne({ email });
+        if (userExists) return res.status(400).json({ message: "User already exists" });
 
-    const user = await User.create({fname,lname, dType, passCountry, dNumber, dEDate, email, password});
-
-    res.json(
-        {
+        const user = await User.create({ fname, lname, dType, passCountry, dNumber, dEDate, email, password });
+        const t =generateToken(user._id);
+        console.log(`TOKEN: ${t}`);
+        res.status(201).json({
             _id: user._id,
             fname: user.fname,
             lname: user.lname,
@@ -24,20 +25,22 @@ export const registerUser = async (req, res) => {
             passCountry: user.passCountry,
             dNumber: user.dNumber,
             email: user.email,
-            isAdmin:user.isAdmin,
-
-        }
-    )
-        
-    
-    
+            isAdmin: user.isAdmin,
+            token: t,
+        });
+    } catch (error) {
+        console.error("Register Error:", error); // This prints the REAL error in your terminal
+        res.status(500).json({ message: error.message });
+    }
 };
 
 
 
 export const loginUser = async (req, res) => {
     console.log("LOGIN ATEMPT")
-    const { email, password } = req.body;
+
+    try{
+        const { email, password } = req.body;
 
     const user = await User.findOne({email});
     if(!user) return res.status(400).json({ message: "Invalid email or passworde"});
@@ -65,6 +68,10 @@ export const loginUser = async (req, res) => {
             isAdmin:user.isAdmin,
         }
     )
+    }catch(error){
+        return res.status(500).json({message: `Server error: ${error}`});
+    }
+    
 };
 
 

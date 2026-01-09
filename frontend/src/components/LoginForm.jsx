@@ -1,11 +1,42 @@
 import React, { useState } from 'react';
 import { User, CreditCard, Smartphone, Eye, EyeOff } from 'lucide-react'; // Using lucide-react for icons
-
+import api from '../api/axios';
+import axios from 'axios';
 
 
 const LoginForm = () => {
   const [activeTab, setActiveTab] = useState('password'); // 'password', 'cert', or 'mobile'
   const [showPassword, setShowPassword] = useState(false);
+  const [formData,setFormData] = useState({
+    email:'',
+    password:''
+  }) 
+
+  const handleChang = (e) => {
+    const {name, value} = e.target;
+    console.log(`Form Data: ${formData.email, formData.password}`)
+      setFormData((prev) => 
+        ({
+          ...prev,
+          [name]: value
+        }));
+  };
+
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try{
+       const responce = await api.post('/auth/login', formData);  
+          localStorage.setItem('userInfo', JSON.stringify(responce?.data))    
+          alert('Login Successfull!' + JSON.parse(localStorage.getItem('userInfo')).fname);
+          window.location.href ="/";
+    }catch(error){
+      alert(`Login Failed: ${error}`)
+    }
+  }
+
+  
+
 
   return (
     <div className="w-full max-w-[500px] mx-auto bg-white shadow-sm border border-gray-200 mt-10">
@@ -30,8 +61,10 @@ const LoginForm = () => {
               <label className="block text-sm font-bold text-slate-800 mb-1">Username:</label>
               <p className="text-xs text-slate-500 mb-2">(Email address used for registration)</p>
               <input 
-                type="text" 
                 className="w-full border border-slate-400 p-3 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                type="text" 
+                name='email'
+                onChange={handleChang}
               />
             </div>
 
@@ -42,6 +75,9 @@ const LoginForm = () => {
                 <input 
                   type={showPassword ? "text" : "password"} 
                   className="w-full border border-slate-400 p-3 pr-16 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  name='password'
+                  onChange={handleChang}
+                  
                 />
                 <button 
                   type="button"
@@ -54,7 +90,8 @@ const LoginForm = () => {
             </div>
 
             {/* Submit Button */}
-            <button className="w-full bg-[#007b3d] text-white font-bold py-3 flex items-center justify-center gap-2 hover:bg-green-800 transition-colors uppercase">
+            <button className="w-full bg-[#007b3d] text-white font-bold py-3 flex items-center justify-center gap-2 hover:bg-green-800 transition-colors uppercase"
+            onClick={handleSubmit}>
               <span className="bg-white/20 p-1 rounded">
                 <User size={16} />
               </span>

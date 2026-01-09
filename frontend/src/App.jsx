@@ -22,11 +22,11 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/_myrequests_index" element={<MyRequests/>} />
-        <Route path="/" element={<Home/>} />
+        <Route path="/a" element={<Home/>} />
         <Route path="/_request_index" element={<VisaApplication/>} /> 
         <Route path="/" element={
           <ProtectedRoute>
-            <Dashboard />
+            <VisaApplication/>
           </ProtectedRoute>
         }/>
       </Routes>   

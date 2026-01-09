@@ -1,0 +1,76 @@
+{
+  "uid": "user_8823asdf4af2",
+  "request_number": "REQ-202a6-00421",
+  "status": "Pending",
+  "visa_type": "Type D",
+  "visa_no": null,
+  
+  "travel_purpose": {
+    "category": "Employment",
+    "specific_purpose": "Accredited foreign journalist"
+  },
+  
+  "personal_data": {
+    "first_name": "MARK",
+    "last_name": "SPENCER",
+    "gender": "Male",
+    "date_of_birth": "1990-05-15T00:00:00.000Z",
+    "place_of_birth": "London",
+    "country_of_birth": "United Kingdom",
+    "citizenship_at_birth": "British",
+    "current_citizenship": "British",
+    "foreign_registration_no": "123456789"
+  },
+  
+  "travel_doc": {
+    "type": "Passport",
+    "number": "GBR12345678",
+    "issuing_country": "United Kingdom",
+    "date_of_issue": "2020-01-01T00:00:00.000Z",
+    "valid_until": "2030-01-01T00:00:00.000Z"
+  },
+  
+  "visa_info": {
+    "intended_date_of_entry": "2026-03-01T00:00:00.000Z",
+    "intended_duration_of_stay": 180,
+    "previous_visas_issued": ["SRB-2022-A"],
+    "fingerprints_collected": true
+  },
+  
+  "attachments": [
+    {
+      "file_name": "passport_main_page.jpg",
+      "file_type": "image/jpeg",
+      "file_url": "https://storage.gov.rs/uploads/p_1.jpg",
+      "ocr_verified": true
+    }
+  ],
+  
+  "fee": {
+    "amount": 35.00,
+    "currency": "EUR",
+    "payment_status": "Paid",
+    "transaction_reference": "TXN_998877"
+  }
+}
+
+
+
+{
+  "email":"ad" ,
+  "password": "kdsfj",
+}
+
+
+//register data
+ {
+    "fname": "{ type: String, required: true }",
+    "lname": "{ type: String, require: true}",
+    "dType": "{ type: String, require: true}",
+    "passCountry": "{ type: String, require: true}",
+    "dNumber": "{ type: String, require: true}",
+    "dEDate": "{ type: String, require: true}",
+    "email": "{ type: String, unique: true, required: true }",
+    "password": "{ type: String, required: true }",
+    "isAdmin": "{ type: Boolean, default: false, required: true }"
+  } 

@@ -7,11 +7,8 @@ export default function Register(){
     return (    
         //header section
         <>
-            //header section
             <ULGHeader />
-            //rest of the registration page content
             <div><RegistrationForm /></div>
-            //footer section
             <ULGFooter />
             
         </>
