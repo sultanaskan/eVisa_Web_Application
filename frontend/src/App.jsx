@@ -4,32 +4,33 @@ import Register from "./pages/Register.jsx";
 import {BrowserRouter, Route, Routes} from "react-router-dom";
 import Page from "./pages/Page.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
-import VisaApplication from "./pages/VisaApplication.jsx";
+import VisaApplicationC from "./pages/VisaApplicationC.jsx";
+import VisaApplicationD from "./pages/VisaApplicationD.jsx";
 import MyRequests from "./pages/MyRequests.jsx";
 import Home from "./pages/home.jsx";
+import ULHome from "./pages/ULhome.jsx";
 
 
-
-function Dashboard(){
-  return <h1 className="">Dashboard</h1>
-}
 
 
 function App() {
   return (
-    <BrowserRouter>
+  <BrowserRouter>
       <Routes>
+        {/* Public Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/_myrequests_index" element={<MyRequests/>} />
-        <Route path="/a" element={<Home/>} />
-        <Route path="/_request_index" element={<VisaApplication/>} /> 
-        <Route path="/" element={
-          <ProtectedRoute>
-            <VisaApplication/>
-          </ProtectedRoute>
-        }/>
-      </Routes>   
+        <Route path="/" element={<ULHome />} />
+
+        {/* Protected Routes Group */}
+        <Route element={<ProtectedRoute />}>
+          {/* These will only render if ProtectedRoute returns <Outlet /> */}
+          <Route path="/home" element={<Home />} />
+          <Route path="/_myrequests_index" element={<MyRequests />} />
+          <Route path="/_request_index_c" element={<VisaApplicationC />} />
+           <Route path="/_request_index_d" element={<VisaApplicationD />} />
+        </Route>
+      </Routes>
     </BrowserRouter>
    
   );

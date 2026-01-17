@@ -1,88 +1,229 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../../context/AuthContext';
+import api from '../../../api/axios.js';
 
-const AddDocumentForm = () => {
-  const [files, setFiles] = useState({});
 
-  const requiredDocs = [
-    { id: 'passport', label: 'Copy of travel document (Passport)', description: 'Color scan of the data page.' },
-    { id: 'photo', label: 'Photo', description: 'Recent passport-size color photo.' },
-    { id: 'insurance', label: 'Health Insurance', description: 'Proof of health insurance for the period of stay.' },
-    { id: 'employment', label: 'Proof of employment', description: 'Employment contract or certificate of employment.' }
-  ];
+const getInitialReqState = () =>{
+  const st = sessionStorage.getItem("visaRequest");
+  if(st){
+    return JSON.parse(st);
+  }else{
+     const lt = localStorage.getItem("visaRequest");
+     if(lt){
+      return JSON.parse(lt);
+     }
+  }
+}
 
-  const handleFileChange = (id, fileName) => {
-    setFiles(prev => ({ ...prev, [id]: fileName }));
+
+const AddDocumentForm = ({ step, setStep }) => {
+  const { isAuthenticated } = useAuth();
+  
+  // 1. Core State: Holds filenames and storage URLs
+  const [documents, setDocuments] = useState(() => {
+    const saved = sessionStorage.getItem("visa_docs_meta");
+    return saved ? JSON.parse(saved) : {
+      photography: null,
+      scanned_travel_document: null,
+      invitation_letter: null,
+      ministry_accreditation: null,
+      additional_document_1: null,
+      additional_document_2: null,
+      additional_document_3: null,
+      additional_document_4: null,
+      additional_document_5: null,
+    };
+  });
+
+  // 2. State for live files to be uploaded
+  const [filesToUpload, setFilesToUpload] = useState({});
+  const [previews, setPreviews] = useState({});
+  const [visaRequest] = useState(() => getInitialReqState());
+  
+  // Load previews from sessionStorage/Server URLs on mount
+ useEffect(() => {
+  const syncDocuments = async () => {
+    // 1. Check if we already have data in our 'documents' state
+    const hasExistingData = Object.values(documents).some(doc => doc?.url);
+    if (!hasExistingData && visaRequest?.visa_request_id) {
+      try {
+        // 2. Single API call to get all documents for this ID
+        const result = await api.get(`/visa/visa-request/documents/${visaRequest.visa_request_id}`);
+        if (result.data && result.data.documents) {
+          const serverDocs = result.data.documents;
+          // 3. Update the metadata state (documents)
+          setDocuments(serverDocs);
+          // 4. Update the preview state (previews)
+          const newPreviews = {};
+          Object.keys(serverDocs).forEach(key => {
+            if (serverDocs[key]?.url) {
+              newPreviews[key] = serverDocs[key].url;
+            }
+          });
+          setPreviews(newPreviews);
+          // 5. Keep sessionStorage in sync
+          sessionStorage.setItem("visa_docs_meta", JSON.stringify(serverDocs));
+        }
+      } catch (error) {
+        console.error("Error fetching documents:", error);
+      }
+    } else {
+      // 6. If we ALREADY had data in state, just build the previews from that
+      const existingPreviews = {};
+      Object.keys(documents).forEach(key => {
+        if (documents[key]?.url) {
+          existingPreviews[key] = documents[key].url;
+        }
+      });
+      setPreviews(existingPreviews);
+    }
   };
+  syncDocuments();
+}, [visaRequest?.visa_request_id]); // Run when the ID is available
+
+
+
+  useEffect(()=>{
+    const loadDocsFromServer = async () =>{
+      if(visaRequest.visa_request_id){
+        const res = api.get(`/visa/visa-request/documents/${visaRequest.visa_request_id}`);
+      }
+    }
+  })
+
+
+
+
+
+  const handleFileChange = (field, e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    // Save to local upload queue
+    setFilesToUpload(prev => ({ ...prev, [field]: file }));
+    // Update metadata state
+    const updatedMeta = {
+      ...documents,
+      [field]: { name: file.name, size: file.size, lastModified: file.lastModified, isPending: true }
+    };
+    setDocuments(updatedMeta);
+  
+    // Save metadata to sessionStorage before submit
+    sessionStorage.setItem("visa_docs_meta", JSON.stringify(updatedMeta));
+
+    // Generate UI Preview
+    if (file.type.startsWith('image/')) {
+      const url = URL.createObjectURL(file);
+      setPreviews(prev => ({ ...prev, [field]: url }));
+    } else {
+      setPreviews(prev => ({ ...prev, [field]: 'pdf_icon' }));
+    }
+  };
+
+  const handleNext = async () => {
+    if (!visaRequest?.visa_request_id ) return alert("Visa Request ID not found.");
+    const pendingKeys = Object.keys(filesToUpload);
+    if (pendingKeys.length > 0) {
+      const formData = new FormData();
+      pendingKeys.forEach(key => formData.append(key, filesToUpload[key]));
+
+      try {
+        const response = await api.put(`/visa/visa-request/documents/${visaRequest.visa_request_id}`, 
+          formData, 
+          { headers: { 'Content-Type': 'multipart/form-data' } }
+        );
+
+        // Update sessionStorage with permanent URLs from server
+        const finalDocs = { ...documents };
+        // Assuming response returns { links: { photography: "http://..." } }
+        Object.keys(response.data.links || {}).forEach(key => {
+          finalDocs[key] = {
+            ...finalDocs[key],
+            url: response.data.links[key],
+            isPending: false
+          };
+        });
+
+        sessionStorage.setItem("visa_docs_meta", JSON.stringify(finalDocs));
+        setDocuments(finalDocs);
+        setStep(step + 1);
+      } catch (error) {
+        console.error("Upload failed:", error);
+        alert("Upload failed. Please try again.");
+      }
+    } else {
+      setStep(step + 1);
+    }
+  };
+
+  const allDocs = [
+    { id: 'photography', label: 'Photography', req: true, hint: '.jpg, .png' },
+    { id: 'scanned_travel_document', label: 'National travel document', req: true, hint: '.pdf, .jpg' },
+    { id: 'invitation_letter', label: 'Invitation letter', req: true, hint: '.pdf' },
+    { id: 'ministry_accreditation', label: 'Accreditation of the ministry', req: false, hint: '.pdf' },
+    { id: 'additional_document_1', label: 'Additional document 1', req: false, hint: '.pdf, .jpg' },
+    { id: 'additional_document_2', label: 'Additional document 2', req: false, hint: '.pdf, .jpg' },
+    { id: 'additional_document_3', label: 'Additional document 3', req: false, hint: '.pdf, .jpg' },
+    { id: 'additional_document_4', label: 'Additional document 4', req: false, hint: '.pdf, .jpg' },
+    { id: 'additional_document_5', label: 'Additional document 5', req: false, hint: '.pdf, .jpg' },
+  ];
 
   return (
     <div className="max-w-4xl mx-auto p-6 font-sans text-[#212529]">
-      <h2 className="text-2xl font-bold mb-4 text-[#1a304e]">Add documents</h2>
+      <h2 className="text-2xl font-bold mb-4 text-[#1a304e]">Documents</h2>
       
-      <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-8">
-        <p className="text-sm text-blue-800">
-          <strong>Important:</strong> Only PDF, JPG, or PNG files are allowed. Maximum file size per document is 2MB. 
-          Please ensure all scans are clear and readable.
-        </p>
+      {/* Visual Preview Slots */}
+      <div className="flex gap-4 mb-12">
+        <PreviewSlot label="PHOTO" src={previews.photography} />
+        <PreviewSlot label="PASSPORT" src={previews.scanned_travel_document} dark={false} />
       </div>
 
       <div className="space-y-6">
-        {requiredDocs.map((doc) => (
-          <div key={doc.id} className="border border-gray-200 rounded-sm p-5 bg-white shadow-sm">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex-1">
-                <label className="text-[13px] font-bold uppercase tracking-tight text-[#1a304e] flex items-center gap-2">
-                  {doc.label} <span className="text-red-500">*</span>
-                  <div className="w-4 h-4 rounded-full bg-[#d4af37] opacity-80" title="Help"></div>
-                </label>
-                <p className="text-xs text-gray-500 mt-1">{doc.description}</p>
+        {allDocs.map((doc) => (
+          <div key={doc.id} className="flex flex-col">
+            <label className="text-[11px] font-bold text-[#1a304e] mb-1.5 uppercase">
+              {doc.label} {doc.req && <span className="text-red-500">*</span>}
+            </label>
+            <div className="flex items-center max-w-xl">
+              <div className="flex-1 border border-gray-300 rounded-l-sm bg-[#f1f1f1] h-10 px-3 text-sm text-gray-500 italic flex items-center truncate">
+                {documents[doc.id]?.name || "No file selected"}
               </div>
-
-              <div className="flex items-center gap-3">
-                {files[doc.id] ? (
-                  <div className="flex items-center gap-2 text-green-600 text-sm font-medium">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="truncate max-w-[150px]">{files[doc.id]}</span>
-                    <button 
-                      onClick={() => handleFileChange(doc.id, null)}
-                      className="text-red-500 text-xs hover:underline ml-2"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ) : (
-                  <label className="cursor-pointer bg-white border border-[#2c4765] text-[#2c4765] px-4 py-2 text-xs font-bold uppercase hover:bg-gray-50 transition-colors rounded-sm">
-                    Upload File
-                    <input 
-                      type="file" 
-                      className="hidden" 
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      onChange={(e) => handleFileChange(doc.id, e.target.files[0]?.name)}
-                    />
-                  </label>
-                )}
-              </div>
+              <label className="cursor-pointer bg-[#f8f9fa] border border-gray-300 border-l-0 px-5 h-10 flex items-center text-sm font-bold text-gray-700 hover:bg-gray-200 rounded-r-sm transition-colors">
+                Select file
+                <input type="file" className="hidden" onChange={(e) => handleFileChange(doc.id, e)} />
+              </label>
             </div>
+            {documents[doc.id]?.url && (
+              <a href={documents[doc.id].url} target="_blank" rel="noreferrer" className="text-blue-600 text-[10px] font-bold mt-1 underline">
+                View Uploaded Document
+              </a>
+            )}
+            <p className="text-[10px] text-gray-400 mt-1">{doc.hint}</p>
           </div>
         ))}
       </div>
 
-      <div className="mt-10 p-4 border-t border-gray-100 flex justify-between items-center">
-        <p className="text-[11px] text-gray-400 italic font-medium uppercase">
-          Step 5 of 6: Documents Upload
-        </p>
-        <div className="flex gap-4">
-          <button className="bg-[#1a304e] text-white px-8 py-2 rounded text-sm font-semibold hover:bg-[#2c4765] transition-colors">
-            Previous step
-          </button>
-          <button className="bg-[#1a304e] text-white px-8 py-2 rounded text-sm font-semibold hover:bg-[#2c4765] transition-colors">
-            Next step
-          </button>
-        </div>
+      <div className="mt-10 flex justify-between pt-6 border-t">
+        <button className="bg-[#1a304e] text-white px-10 py-2 rounded-sm text-sm" onClick={() => setStep(step - 1)}>
+          Previous
+        </button>
+        <button className="bg-[#1a304e] text-white px-10 py-2 rounded-sm text-sm" onClick={handleNext}>
+          Next Step
+        </button>
       </div>
     </div>
   );
 };
+
+const PreviewSlot = ({ label, src, dark = true }) => (
+  <div className={`w-40 h-40 border-2 shadow-sm flex items-center justify-center overflow-hidden ${dark ? 'bg-[#1e293b] border-white' : 'bg-white border-gray-200'}`}>
+    {src && src !== 'pdf_icon' ? (
+      <img src={src} className="w-full h-full object-cover" alt="preview" />
+    ) : (
+      <span className={`text-[9px] font-bold ${dark ? 'text-white/30' : 'text-gray-400'}`}>
+        {src === 'pdf_icon' ? 'PDF ATTACHED' : `${label} PREVIEW`}
+      </span>
+    )}
+  </div>
+);
 
 export default AddDocumentForm;

@@ -1,95 +1,110 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext.jsx';
+import api from '../api/axios.js';
 
 const MyRequestList = () => {
-  // Mock data based on the provided screenshot
-  const requests = [
-    {
-      id: "320860",
-      name: "MOHAMMAD HASAN",
-      status: "Draft request",
-      visaType: "Visa D",
-      visId: "/"
-    },
-    {
-      id: "355195",
-      name: "MOHAMMAD HASAN",
-      status: "Draft request",
-      visaType: "Visa C",
-      visId: "/"
-    },
-    {
-      id: "355195",
-      name: "MOHAMMAD HASAN",
-      status: "Draft request",
-      visaType: "Visa C",
-      visId: "/"
-    },
-    {
-      id: "355195",
-      name: "MOHAMMAD HASAN",
-      status: "Draft request",
-      visaType: "Visa C",
-      visId: "/"
-    }
-  ];
+  const { user, isAuthenticated } = useAuth();
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRequests = async () => {
+      if (!user?._id) return;
+      
+      try {
+        setLoading(true);
+        const response = await api.get(`/visa/visa-request/find-list/${user._id}`);
+        
+        // Target the specific array inside the response object
+        if (response.data && response.data.visaRequestList) {
+          setRequests(response.data.visaRequestList);
+        }
+      } catch (error) {
+        console.error("Error fetching requests:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (isAuthenticated) fetchRequests();
+  }, [user, isAuthenticated]);
+
+  if (!isAuthenticated) return <div className="p-20 text-center">Please log in.</div>;
 
   return (
     <div className="max-w-6xl mx-auto p-6 font-sans text-[#212529]">
-      <h1 className="text-5xl font-bold text-[#1a304e] text-center mt-12 mb-20">
+      <h1 className="text-5xl font-bold text-[#1a304e] text-center mt-12 mb-20 tracking-tight">
         List of previously sent requests
       </h1>
 
       <div className="space-y-0 border-t border-gray-200">
-        {requests.map((req) => (
-          <RequestRow key={req.id} request={req} />
-        ))}
+        {loading ? (
+          <div className="py-10 text-center text-gray-400 font-bold uppercase tracking-widest">Loading...</div>
+        ) : requests.length > 0 ? (
+          requests.map((req) => (
+            <RequestRow key={req._id} request={req} />
+          ))
+        ) : (
+          <div className="py-20 text-center text-gray-500">No visa requests found.</div>
+        )}
       </div>
     </div>
   );
 };
 
-const RequestRow = ({ request }) => (
-  <div className="grid grid-cols-1 md:grid-cols-5 gap-4 py-8 border-b border-gray-200 items-start">
-    {/* Request Number */}
-    <div>
-      <h3 className="text-[#999] text-sm font-medium mb-1">Request number</h3>
-      <p className="text-[#1a304e] font-bold text-lg">{request.id}</p>
-    </div>
+const RequestRow = ({ request }) => {
+  const navigate = useNavigate();
 
-    {/* Name */}
-    <div>
-      <h3 className="text-[#999] text-sm font-medium mb-1">First and last name</h3>
-      <p className="text-[#1a304e] font-bold text-lg leading-tight uppercase">
-        {request.name}
-      </p>
-    </div>
+  const handleOpenRequest = () => {
+    // 1. Clear any old draft data to prevent mixing applications
 
-    {/* Status */}
-    <div>
-      <h3 className="text-[#999] text-sm font-medium mb-1">Status</h3>
-      <span className="bg-[#f0ad4e] text-white px-3 py-1 text-sm font-medium inline-block">
-        {request.status}
-      </span>
-    </div>
+    // We use request.request_number based on your console log
+    sessionStorage.setItem("visaRequest", JSON.stringify(request));
 
-    {/* Visa Type */}
-    <div>
-      <h3 className="text-[#999] text-sm font-medium mb-1">Visa</h3>
-      <p className="text-[#1a304e] font-bold text-lg">{request.visaType}</p>
-    </div>
+    
+    // 4. Navigate based on the type found in the data
+    const targetRoute = request.visa_type === "Type D" 
+      ? "/_request_index_d" 
+      : "/_request_index_c";
 
-    {/* Vis Id & Action */}
-    <div className="flex justify-between items-start">
+    navigate(targetRoute);
+  };
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-5 gap-4 py-8 border-b border-gray-200 items-start hover:bg-gray-50 transition-colors px-2">
       <div>
-        <h3 className="text-[#999] text-sm font-medium mb-1">Vis Id</h3>
-        <p className="text-[#1a304e] font-bold text-lg">{request.visId}</p>
+        <h3 className="text-[#999] text-[11px] font-bold uppercase mb-1">Request number</h3>
+        <p className="text-[#1a304e] font-bold text-lg">{request.request_number}</p>
       </div>
-      
-      <button className="bg-[#2c4765] text-white px-6 py-3 rounded text-sm font-bold hover:bg-[#1a304e] transition-colors shadow-sm">
-        Open Request
-      </button>
+
+      <div>
+        <h3 className="text-[#999] text-[11px] font-bold uppercase mb-1">Visa Number</h3>
+        <p className="text-[#1a304e] font-bold text-lg">{request.visa_no || "N/A"}</p>
+      </div>
+
+      <div>
+        <h3 className="text-[#999] text-[11px] font-bold uppercase mb-1">Status</h3>
+        <span className="bg-[#f0ad4e] text-white px-3 py-1 text-[11px] font-bold uppercase inline-block">
+          {request.status}
+        </span>
+      </div>
+
+      <div>
+        <h3 className="text-[#999] text-[11px] font-bold uppercase mb-1">Visa Type</h3>
+        <p className="text-[#1a304e] font-bold text-lg">{request.visa_type}</p>
+      </div>
+
+      <div className="flex justify-end items-center h-full">
+        <button 
+          onClick={handleOpenRequest}
+          className="bg-[#2c4765] text-white px-5 py-2.5 rounded-sm text-[11px] font-bold uppercase tracking-wider hover:bg-[#1a304e] transition-all"
+        >
+          Open Request
+        </button>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default MyRequestList;

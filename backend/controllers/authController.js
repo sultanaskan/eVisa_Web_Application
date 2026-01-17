@@ -17,7 +17,8 @@ export const registerUser = async (req, res) => {
         const user = await User.create({ fname, lname, dType, passCountry, dNumber, dEDate, email, password });
         const t =generateToken(user._id);
         console.log(`TOKEN: ${t}`);
-        res.status(201).json({
+        res.json({
+            success:true,
             _id: user._id,
             fname: user.fname,
             lname: user.lname,

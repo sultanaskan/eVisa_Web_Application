@@ -1,31 +1,66 @@
-import React, { createContext, useState } from 'react';
-import { useContext } from 'react';
+import React, {createContext, useState, useEffect, useContext} from 'react';
+import { Navigate } from 'react-router-dom';
 
- const AuthContext = createContext(null);
+//create the context
+const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem('user');
-    return storedUser ? JSON.parse(storedUser) : null;
-  });
+export const AuthProvider = ({children}) => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const login = (data) => {
-    localStorage.setItem('user', JSON.stringify(data));
-    setUser(data);
-  };
+  //1. on initial load check localsoteage forexisting user
+  useEffect(() => {
+    const storedUser = localStorage.getItem('userInfo');
+    if(storedUser){
+      try{
+        setUser(JSON.parse(storedUser));
+      }catch(error){
+        console.error("Failed to parse store user", error);
+        localStorage.removeItem('userInfo');
+      }
+    }
+   setLoading(false);
+  },[]);
 
-  const logout = () => {
-    localStorage.removeItem('user');
+
+  //2. login function
+  const login = (userData) => {
+    localStorage.setItem('userInfo', JSON.stringify(userData));
+    setUser(userData);  
+    alert(`Login Successful! \nWelcome, ${userData?.fname} \n\nClick ok to access your account!`);
+    window.location.href = "/home";
+  }
+
+
+  //3. Logout Function
+  const logout =()=>{
+    localStorage.removeItem('userInfo');
     setUser(null);
+    window.location.href = '/login';
   };
 
-  return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+
+  const value = {
+    user,
+    loading,
+    login,
+    logout,
+    isAuthenticated: !!user
+  };
+
+  return(
+    <AuthContext.Provider value ={value}>
       {children}
     </AuthContext.Provider>
-  );
+  )
 };
 
-export const useAuth =  () =>{
-  return useContext(AuthContext);
+
+// 4. Create the Custom Hook
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if(!context){
+    throw new Error('useAuth must be used with in and AuthProvider');
+  }
+  return context;
 }

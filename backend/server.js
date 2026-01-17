@@ -16,6 +16,7 @@ app.use(express.urlencoded({extended: true}));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/visa', visaRoutes);
+app.use('/uploads', express.static('uploads'));
 
 
 app.listen(process.env.PORT || 5000, () =>  

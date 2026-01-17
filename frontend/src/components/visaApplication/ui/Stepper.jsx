@@ -14,7 +14,7 @@ export const Stepper = ({ currentStep }) => (
           {label}
         </span>
       </div>
-    ))}
+    ))} 
   </div>
 );
 
@@ -41,17 +41,4 @@ export function SteperAction({step, setStep}){
   }
 
 
-  return(
-      <div className="flex justify-between items-center pt-6 border-t border-gray-100">
-        <button className="bg-gray-200 text-gray-700 px-8 py-2.5 rounded text-xs font-bold uppercase hover:bg-gray-300 transition-colors" onClick={pre}>
-          Previous step
-        </button>
-        <button className="bg-gray-200 text-gray-700 px-8 py-2.5 rounded text-xs font-bold uppercase hover:bg-gray-300 transition-colors" onClick={next}>
-          Next step
-        </button>
-        () (<button className="bg-[#1a304e] text-white px-12 py-2.5 rounded text-xs font-bold uppercase hover:bg-[#2c4765] transition-all shadow-md active:transform active:scale-95" onClick={submit}>
-          Submit application & Pay
-        </button>)
-      </div>
-  )
 }

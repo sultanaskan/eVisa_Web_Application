@@ -1,8 +1,9 @@
-import { useContext } from "react";
-import { Navigate } from "react-router-dom";
-import {  useAuth } from "../context/AuthContext.jsx";
+import { Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 
-export default function ProtectedRoute({ children }) {
-  const { user } = useAuth();
-  return user? children : <Navigate to="/login" />;
+export default function ProtectedRoute() {
+  const { user, loading } = useAuth();
+  if(loading) return null;
+  // If user exists, render the child routes via <Outlet />
+  return user ? <Outlet/> : <Navigate to="/login" />;
 }

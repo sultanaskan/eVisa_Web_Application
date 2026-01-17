@@ -1,27 +1,57 @@
 // components/layout/Footer.jsx
 import "../../App.css";
-import Header from "./Header";
 import rslogo from '../../assets/rslogo.png';
 
+export const Footer = () => {
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
-export const Footer = () => (
-  <footer className="w-full bg-white mt-20 pt-10 pb-6 border-t border-gray-100">
-    <div className="max-w-7xl mx-auto px-6 flex flex-col items-center md:items-start">
-      <div className="flex flex-col md:flex-row gap-6 mb-8">
-        <img src={rslogo} alt="Serbia" className="h-16 w-auto" />
-        <div>
-          <h2 className="text-xl font-bold text-slate-800">welcometoserbia.gov.rs</h2>
-          <p className="text-xs text-slate-500">Welcome to Serbia</p>
+  return (
+    <footer className="w-full mt-20 font-sans">
+      {/* Blue "Top of the page" bar */}
+      <div className="bg-[#1a304e] w-full py-2">
+        <div className="max-w-7xl mx-auto px-6 flex justify-end">
+          <button 
+            onClick={scrollToTop}
+            className="text-white text-[11px] font-medium hover:underline flex items-center gap-1"
+          >
+            Top of the page
+          </button>
         </div>
       </div>
-      <p className="text-[10px] text-gray-400 max-w-2xl text-center md:text-left">
-        The Website is licensed under a license of Creative Commons Attribution-Non-commercial-No rework 3.0 Serbia. 
-        Web project <a href="#" className="underline">ite.gov.rs</a>
-      </p>
-      <div className="mt-4 flex gap-4 text-[10px] text-gray-400">
-        <a href="#">Terms of use</a>
-        <a href="#">Privacy Policy</a>
+
+      {/* Main Footer Content */}
+      <div className="bg-white pt-12 pb-10">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row items-start gap-6 mb-6">
+            <img src={rslogo} alt="Republic of Serbia Coat of Arms" className="h-20 w-auto" />
+            <div className="space-y-1">
+              <h2 className="text-[22px] font-bold text-[#1a304e]">welcometoserbia.gov.rs</h2>
+              <p className="text-sm text-gray-600">Welcome to Serbia</p>
+            </div>
+          </div>
+
+          <div className="text-[12px] text-gray-500 leading-relaxed max-w-4xl space-y-2">
+            <p>
+              The Website is licensed under a{' '}
+              <a href="#" className="text-[#5b96e0] font-bold hover:underline">
+                Creative Commons
+              </a>{' '}
+              Attribution-NonCommercial-No Derivs 3.0 Serbia License. Web project{' '}
+              <a href="https://ite.gov.rs" className="text-[#5b96e0] font-bold hover:underline">
+                ite.gov.rs
+              </a>
+            </p>
+            
+            <div className="pt-2">
+              <a href="#" className="text-[#5b96e0] font-bold hover:underline">
+                Privacy Policy and terms of Use
+              </a>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  </footer>
-);
+    </footer>
+  );
+};

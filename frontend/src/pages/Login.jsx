@@ -13,7 +13,6 @@ function Login() {
       <ULGHeader />
       
       <main className="login-card">
-        <h2>Login</h2>
         
         {/* Pass state to the switcher to change tabs */}
         <TabSwitcher activeTab={activeTab} setActiveTab={setActiveTab} />
