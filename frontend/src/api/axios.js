@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
     //https://api.wellcometoserbia.com/api   http://localhost:5000/api
-    baseURL: "http://localhost:5000/api",
+    baseURL: "https://api.wellcometoserbia.com/api",
 });
 
 api.interceptors.request.use((config) => {

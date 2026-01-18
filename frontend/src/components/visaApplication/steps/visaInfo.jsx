@@ -9,8 +9,8 @@ const getInitialVisaState = () => {
   return {
     about_visa: {
       diplomatic_consular_post: "NEW DELHI",
-      visa_type: "Type D",
-      travel_purpose: "Employment",
+      visa_type: "",
+      travel_purpose: "",
       number_of_days_stay: "",
       currently_studying: "No",
       state_scholarship_approval: "No",
@@ -50,12 +50,12 @@ const getInitialReqState = () =>{
 
 
 
-const VisaInformationForm = ({ step, setStep }) => {
+const VisaInformationForm = ({step, setStep, visaType }) => {
   const { isAuthenticated } = useAuth();
   const [visaInfoData, setVisaInfoData] = useState(() => getInitialVisaState());
   const [visaRequest, setVisaRequest] = useState(() => getInitialReqState());
 
-
+  //LoadVisaInfoFromServer
   useEffect(() => {
     const LoadVisaInfoFromServer =async () => {
       try{
@@ -122,7 +122,7 @@ const VisaInformationForm = ({ step, setStep }) => {
             value={visaInfoData.about_visa.diplomatic_consular_post} 
             onChange={handleChange} 
           />
-          <InputGroup label="Visa Type" value={visaInfoData.about_visa.visa_type} readOnly />
+          <InputGroup label="Visa Type" value={visaInfoData.about_visa.visa_type || visaType} name="abut_visa.visa_type" onChange={handleChange} />
           <InputGroup label="Purpose" name="about_visa.travel_purpose" value={visaInfoData.about_visa.travel_purpose} onChange={handleChange} />
           <InputGroup label="Days of Stay" name="about_visa.number_of_days_stay" type="number" required value={visaInfoData.about_visa.number_of_days_stay} onChange={handleChange} />
         </div>

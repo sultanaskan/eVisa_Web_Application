@@ -9,11 +9,16 @@ import VisaApplicationD from "./pages/VisaApplicationD.jsx";
 import MyRequests from "./pages/MyRequests.jsx";
 import Home from "./pages/home.jsx";
 import ULHome from "./pages/ULhome.jsx";
+import Dashboard from "./admin pannel/pages/dashboard.jsx";
+import { useAuth } from "./context/AuthContext.jsx";
+import {NotFound} from "./pages/NotFound.jsx"
 
 
 
 
 function App() {
+  const {user} = useAuth()
+
   return (
   <BrowserRouter>
       <Routes>
@@ -28,7 +33,15 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/_myrequests_index" element={<MyRequests />} />
           <Route path="/_request_index_c" element={<VisaApplicationC />} />
-           <Route path="/_request_index_d" element={<VisaApplicationD />} />
+          <Route path="/_request_index_d" element={<VisaApplicationD />} />
+          {user?.isAdmin && (
+            <Route path="/admin_panel" element={<Dashboard/>} /> 
+          )
+          } 
+
+          <Route path="*" element={<NotFound/>} />
+          
+          
         </Route>
       </Routes>
     </BrowserRouter>

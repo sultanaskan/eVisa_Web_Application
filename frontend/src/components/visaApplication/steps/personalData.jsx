@@ -146,7 +146,7 @@ const PersonalDetail = ({ step, setStep }) => {
         <div className="space-y-4">
           <InputGroup label="First name" name="personal_information.first_name" required value={personalData.personal_information.first_name} onChange={handleLocalChange} />
           <InputGroup label="Last name" name="personal_information.last_name" required value={personalData.personal_information.last_name} onChange={handleLocalChange} />
-          <InputGroup label="Birth name" name="personal_information.birth_name" value={personalData.personal_information.birth_name} onChange={handleLocalChange} />
+          <InputGroup label="Place of birth" name="personal_information.birth_name" value={personalData.personal_information.birth_name} onChange={handleLocalChange} />
           <SelectGroup label="Gender" name="personal_information.gender" required options={['Male', 'Female']} value={personalData.personal_information.gender} onChange={handleLocalChange} />
           <InputGroup label="Date of birth" name="personal_information.date_of_birth" required type="date" value={personalData.personal_information.date_of_birth} onChange={handleLocalChange} />
           <SelectGroup label="Country of birth" name="personal_information.country_of_birth" required options={['Bangladesh', 'Serbia', 'USA']} value={personalData.personal_information.country_of_birth} onChange={handleLocalChange} />

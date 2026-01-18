@@ -30,6 +30,7 @@ const MyRequestList = () => {
     if (isAuthenticated) fetchRequests();
   }, [user, isAuthenticated]);
 
+ 
   if (!isAuthenticated) return <div className="p-20 text-center">Please log in.</div>;
 
   return (
@@ -56,6 +57,7 @@ const MyRequestList = () => {
 const RequestRow = ({ request }) => {
   const navigate = useNavigate();
 
+  //Handle open request
   const handleOpenRequest = () => {
     // 1. Clear any old draft data to prevent mixing applications
 
@@ -71,6 +73,16 @@ const RequestRow = ({ request }) => {
     navigate(targetRoute);
   };
 
+
+  //Status Color
+   const statusColors = {
+    Draft: "bg-gray-800",    // Dark
+    Pending: "bg-[#f0ad4e]", // Yellow
+    Approved: "bg-green-600", // Green
+    Rejected: "bg-red-600",   // Red
+  };
+
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-5 gap-4 py-8 border-b border-gray-200 items-start hover:bg-gray-50 transition-colors px-2">
       <div>
@@ -85,7 +97,7 @@ const RequestRow = ({ request }) => {
 
       <div>
         <h3 className="text-[#999] text-[11px] font-bold uppercase mb-1">Status</h3>
-        <span className="bg-[#f0ad4e] text-white px-3 py-1 text-[11px] font-bold uppercase inline-block">
+        <span className={`${statusColors[request.status] || "bg-blue-500"}  bg-[#f0ad4e] text-white px-3 py-1 text-[11px] font-bold uppercase inline-block`}>
           {request.status}
         </span>
       </div>

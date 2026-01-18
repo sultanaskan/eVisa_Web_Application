@@ -50,6 +50,8 @@ const FeeSection = ({ step, setStep, visaType }) => {
       }
     }catch(error){
       console.error("Error updating visaRequest", error);
+    }finally{
+      window.location.href = '/_myrequests_index'
     }
    
     console.log("Initiating payment for:", visaType, "Data:", formData);

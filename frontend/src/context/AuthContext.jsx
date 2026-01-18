@@ -28,7 +28,13 @@ export const AuthProvider = ({children}) => {
     localStorage.setItem('userInfo', JSON.stringify(userData));
     setUser(userData);  
     alert(`Login Successful! \nWelcome, ${userData?.fname} \n\nClick ok to access your account!`);
-    window.location.href = "/home";
+    console.log(userData);
+    if(userData.isAdmin){
+      window.location.href = "/admin_panel";
+    }else{
+      window.location.href = "/home";
+    }
+    
   }
 
 

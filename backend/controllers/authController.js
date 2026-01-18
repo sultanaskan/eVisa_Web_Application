@@ -76,4 +76,17 @@ export const loginUser = async (req, res) => {
 };
 
 
+
+export const getUsers = async (req, res) => {
+    try{
+        const users = await User.find();
+        if(users){
+            res.status(200).json(users);
+        }else{
+            res.status(400).json({message:"Bad request! "})
+        }
+    }catch(error){
+        res.status(500).json({message:"somthing wrong on server."}, error)
+    }
+}
     

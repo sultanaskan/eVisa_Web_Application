@@ -3,8 +3,12 @@ import { HeroSection } from '../components/home/HeroSection';
 import { InfoBanner, SupportSection } from '../components/home/SupportSection'; 
 import { Footer } from '../components/layout/Footer';
 import Header from '../components/layout/Header';
+import { Link } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const ULHome = () => {
+  const navigate = useNavigate();
+  
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -36,12 +40,17 @@ const ULHome = () => {
                   List of available services will be presented after you login.
                 </p>
                 <div className="flex items-center gap-8">
-                  <button className="bg-[#1a304e] text-white px-10 py-3 rounded-md font-bold text-sm hover:bg-[#2c4765] transition-colors uppercase tracking-wider">
-                    Login
-                  </button>
-                  <button className="text-[#5b96e0] font-bold text-sm hover:underline uppercase tracking-wider">
-                    Register an account
-                  </button>
+                    <button className="bg-[#1a304e] text-white px-10 py-3 rounded-md font-bold text-sm hover:bg-[#2c4765] transition-colors uppercase tracking-wider"
+                    onClick={() => navigate("/login")}
+                    >
+                      Login
+                    </button>
+
+                    <button className="text-[#5b96e0] font-bold text-sm hover:underline uppercase tracking-wider"
+                    onClick={() => navigate("/register")}
+                    >
+                      Register an account
+                    </button>
                 </div>
               </div>
 
